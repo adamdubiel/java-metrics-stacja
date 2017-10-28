@@ -1,0 +1,9 @@
+management:
+  security:
+    enabled: false
+
+server:
+  port: 8082
+
+failuresPercent: 10
+timeoutsPercent: 10

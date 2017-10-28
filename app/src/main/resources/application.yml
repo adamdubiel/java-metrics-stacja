@@ -1,0 +1,6 @@
+listener:
+  uri: http://localhost:8082/events
+
+management:
+  security:
+    enabled: false
