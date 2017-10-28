@@ -2,6 +2,7 @@ package com.adamdubiel.workshop.metrics.api;
 
 import com.adamdubiel.workshop.metrics.domain.Restaurant;
 import com.adamdubiel.workshop.metrics.domain.RestaurantsService;
+import com.codahale.metrics.MetricRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -21,24 +22,25 @@ public class RestaurantsEndpoint {
 
     private final RestaurantsService restaurantsService;
 
-    public RestaurantsEndpoint(RestaurantsService restaurantsService) {
+    private final MetricRegistry metricRegistry;
+
+    public RestaurantsEndpoint(RestaurantsService restaurantsService, MetricRegistry metricRegistry) {
         this.restaurantsService = restaurantsService;
+        this.metricRegistry = metricRegistry;
     }
 
     @RequestMapping(method = RequestMethod.GET)
     public List<Restaurant> list() {
-        long startTime = System.currentTimeMillis();
+        metricRegistry.counter("restaurants.list").inc();
         List<Restaurant> restaurants = restaurantsService.list();
-        logger.info("Listing restaurants took {}ms", System.currentTimeMillis() - startTime);
         return restaurants;
     }
 
     @RequestMapping(method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void add(@RequestBody Restaurant restaurant) {
-        long startTime = System.currentTimeMillis();
+        metricRegistry.meter("restaurants.add").mark();
         restaurantsService.add(restaurant);
-        logger.info("Adding restaurant took {}ms", System.currentTimeMillis() - startTime);
     }
 
 }

@@ -4,3 +4,7 @@ listener:
 management:
   security:
     enabled: false
+
+httpclient:
+  maxConnectionsPerRoute: 20
+  maxConnections: 20

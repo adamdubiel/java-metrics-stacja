@@ -1,6 +1,7 @@
 package com.adamdubiel.workshop.metrics.infrastructure;
 
 import com.adamdubiel.workshop.metrics.config.HttpClientProperties;
+import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
@@ -47,6 +48,16 @@ public class HttpClientFactory {
         manager.setDefaultMaxPerRoute(config.getMaxConnectionsPerRoute());
 
         // manager can be measured: manager.getTotalStats()
+
+        metricRegistry.register(
+                "http-client.utilization",
+                (Gauge<Double>) () -> manager.getTotalStats().getLeased() / (double) manager.getTotalStats().getMax()
+        );
+
+        metricRegistry.register(
+                "http-client.pending",
+                (Gauge<Integer>) () -> manager.getTotalStats().getPending()
+        );
 
         return manager;
     }

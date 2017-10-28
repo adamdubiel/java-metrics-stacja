@@ -1,10 +1,13 @@
 package com.adamdubiel.workshop.metrics.infrastructure;
 
+import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class ThreadPoolFactory {
@@ -16,11 +19,28 @@ public class ThreadPoolFactory {
     }
 
     public ExecutorService executorService(int threads) {
-        ExecutorService executorService = Executors.newFixedThreadPool(threads);
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(
+                threads, threads,
+                1, TimeUnit.MINUTES,
+                new ArrayBlockingQueue<>(1000)
+        );
 
-        // ThreadPoolExecutor can be measured: ThreadPoolExecutor#activeCount ThreadPoolExecutor#maximumPoolSize
+        metricRegistry.register(
+                "thread-pool.utilization",
+                (Gauge<Double>) () -> executor.getActiveCount() / (double) executor.getMaximumPoolSize()
+        );
 
-        return executorService;
+        metricRegistry.register(
+                "thread-pool.pending",
+                (Gauge<Integer>) () -> executor.getQueue().size()
+        );
+
+        metricRegistry.register(
+                "thread-pool.queueUtilization",
+                (Gauge<Double>) () -> executor.getQueue().size() / (double)  (executor.getQueue().size() + executor.getQueue().remainingCapacity())
+        );
+
+        return executor;
     }
 
 }

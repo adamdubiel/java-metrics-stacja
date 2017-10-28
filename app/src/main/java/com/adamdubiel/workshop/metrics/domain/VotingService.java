@@ -19,7 +19,7 @@ public class VotingService implements AutoCloseable {
     public VotingService(RestaurantRepository restaurantRepository, MetricRegistry metricRegistry, ThreadPoolFactory factory) {
         this.restaurantRepository = restaurantRepository;
         this.metricRegistry = metricRegistry;
-        this.executorService = factory.executorService(5);
+        this.executorService = factory.executorService(100);
     }
 
     public void vote(Vote vote) {
